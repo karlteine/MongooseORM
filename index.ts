@@ -6,6 +6,7 @@ const database = mongoose.connection;
 import cors from "cors";
 import bodyParser from "body-parser";
 import commentController from "./controllers/commentController";
+import authorController from "./controllers/authorController"
 
 const app: Express = express();
 
@@ -28,6 +29,7 @@ app.get('/', (req: Request, res: Response) => {
 
 app.use('/', articleController)
 app.use('/', commentController);
+app.use('/', authorController)
 
 app.listen(3000,() => {
   console.log(`[server]: Server is running at http://localhost:3000`);
