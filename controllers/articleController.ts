@@ -1,5 +1,6 @@
 import { Request, Response, Router } from "express";
 import Article from "../models/article";
+import Comment from "../models/comment";
 
 const router: Router = Router();
 
@@ -54,13 +55,54 @@ router.put('/article/:id', async (req: Request, res: Response) => {
   try{
     const id = req.params.id;
     const updatedData = req.body;
-    const options = { new: true };
+    const options = { new: true };  
 
     const result = await Article.findByIdAndUpdate(
         id, updatedData, options
     )
 
     res.send(result)
+  }
+  catch(error){
+    res.status(500).json({message: error})
+  }
+})
+
+
+router.post('/article/:id/comment', async (req: Request, res: Response) => {
+    try {
+      const id = req.params.id;
+  
+      const data = new Comment({
+        date: new Date(),
+        content: req.body.content,
+        article: id
+      });
+  
+      // Save the comment and wait for it to finish
+      const savedComment = await data.save();
+  
+      // Now, update the article by pushing the saved comment ID into the comments array
+      const options = { new: true };
+      const updatedArticle = await Article.findByIdAndUpdate(
+        id, 
+        { $push: { comments: savedComment._id } }, 
+        options
+      );
+  
+      res.json(updatedArticle); // Respond with the updated article
+    } catch (error) {
+      res.status(500).json({ message: error }); // Better error handling
+    }
+  });
+
+router.get('/article/:id/comment', async (req: Request, res: Response) => {
+  try{
+    const id = req.params.id;
+
+    const result = await Article.findById(id).populate("comments");
+  
+    res.send(result);
   }
   catch(error){
     res.status(500).json({message: error})
